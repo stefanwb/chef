@@ -170,7 +170,7 @@ class Chef
         # @param args [String] variable number of string arguments
         # @return [Mixlib::ShellOut] object returned from shell_out!
         def choco_command(*args)
-          shell_out!(choco_exe, *args, returns: new_resource.returns)
+          shell_out!(args_to_string(choco_exe, *args), returns: new_resource.returns)
         end
 
         # Use the available_packages Hash helper to create an array suitable for
@@ -209,7 +209,17 @@ class Chef
         def cmd_args(include_source: true)
           cmd_args = [ new_resource.options ]
           cmd_args += common_options(include_source: include_source)
-          cmd_args
+          args_to_string(*cmd_args)
+        end
+
+        # Helper to nicely convert variable string args into a single command line.  It
+        # will compact nulls or empty strings and join arguments with single spaces, without
+        # introducing any double-spaces for missing args.
+        #
+        # @param args [String] variable number of string arguments
+        # @return [String] nicely concatenated string or empty string
+        def args_to_string(*args)
+          args.reject { |i| i.nil? || i == "" }.join(" ")
         end
 
         # Available packages in chocolatey as a Hash of names mapped to versions
